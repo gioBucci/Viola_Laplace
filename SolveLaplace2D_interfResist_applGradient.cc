@@ -93,6 +93,7 @@ private:
   std::vector<Point<dim> >  evaluation_points;
   std::vector<double>       normal_current_density;
   std::map<double,double>   evaluationPt_list;
+  std::string mesh;
  
 };
 
@@ -176,9 +177,10 @@ EPotential<dim>::EPotential ()
   applied_current(1),
   current_density(1000.0),          // 1 A/m2 -> 0.1 mA/cm2
   // the current density here is to be inteded as the actual applied current density divided by the conductivity
-  bulk_conductivity(0.1),        // 1 mS/cm -> 0.1 S/m
-  surface_resistance(0.00001),    // 100 Ohm cm2  -> 0.01 Ohm m2
-  convective_coeff(1.0 / (bulk_conductivity * surface_resistance))
+  bulk_conductivity(0.0001),        // 1 mS/cm -> 0.1 S/m
+  surface_resistance(0.001),    // 100 Ohm cm2  -> 0.01 Ohm m2
+  convective_coeff(1.0 / (bulk_conductivity * surface_resistance)),
+  mesh ("640round_long")
 
 {}
 
@@ -192,14 +194,15 @@ void EPotential<dim>::make_grid ()
     gridin.attach_triangulation(triangulation);
 
     std::string input;
-    input = "SEdomain_160round.msh";
+    input = "SEdomain_" + mesh + ".msh";
+
     std::ifstream f(input);
     gridin.read_msh(f);
 
     const double SEW = 1.0;
     const double SEH = 1.0;
-    const double CrL = 0.1;
-    const double CrW = CrL/4.0;	
+    const double CrL = 0.2;
+    const double CrW = CrL/16.0;	
     const double tol = 1.e-8;
   
     for (typename Triangulation<dim>::active_cell_iterator cell =
@@ -212,7 +215,9 @@ void EPotential<dim>::make_grid ()
 	      if ( cell->face(face)->at_boundary() == true ) 
 		{ 
 		  if ( (cell->face(face)->center()[0] <= CrL + tol && std::fabs(cell->face(face)->center()[1]) <= 1.25*CrW)
-		       || cell->face(face)->center()[0] <= tol )
+		       || (cell->face(face)->center()[0] <= tol
+			   // && std::fabs( cell->face(face)->center()[1]) < 0.8*SEH
+			   ) )
 		    cell->face(face)->set_boundary_id(Xnormal_negative_plane);	
 		  
 		  else if (std::fabs( cell->face(face)->center()[0] - SEW) < tol)
@@ -482,7 +487,7 @@ void EPotential<dim>::output_results () const
   data_out.build_patches ();
 
   std::ostringstream filename;
-  filename << "potential-" << "160cr-" << current_density/100.0 << "mA_cm2-"
+  filename << "potential-" << mesh << "-" << current_density/100.0 << "mA_cm2-"
 	   << surface_resistance*10000 << "ohmCm2_interfResist-" << bulk_conductivity*10 <<  "mS_cm_bulkCond.vtk";
 
   std::ofstream output(filename.str().c_str());
@@ -534,7 +539,7 @@ void EPotential<dim>::PointValueEvaluation ()
   // Set up file where to save the output
   std::ostringstream filename2;
       
-  filename2 << "PotentialField-" << "160cr-" << current_density/100.0 << "mA_cm2-"
+  filename2 << "PotentialField-" << mesh << "-" << current_density/100.0 << "mA_cm2-"
 	    << surface_resistance*10000 << "ohmCm2_interfResist-" << bulk_conductivity*10 <<  "mS_cm_bulkCond.csv";
   
   std::ofstream SurfacePotential_file (filename2.str().c_str());
@@ -591,7 +596,7 @@ void EPotential<dim>:: PointXDerivativeEvaluation()
   
   std::ostringstream filename;
 
-  filename << "ElectricField-" << "160cr-" << current_density/100.0 << "mA_cm2-"
+  filename << "ElectricField-" << mesh << "-" << current_density/100.0 << "mA_cm2-"
 	   << surface_resistance*10000 << "ohmCm2_interfResist-" << bulk_conductivity*10 <<  "mS_cm_bulkCond.csv";
   
   std::ofstream ElectricField_file (filename.str().c_str());
