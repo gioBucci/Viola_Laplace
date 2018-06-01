@@ -1,4 +1,5 @@
 /* ---------------------------------------------------------------------
+ * GROWTH MODEL
  * This code is self-contained. It solves the laplace equation to smooth
  * the mesh after moving the nodes along one of the bondaries along the  
  * direction normal to the boundary itself
