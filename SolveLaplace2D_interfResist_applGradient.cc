@@ -465,14 +465,12 @@ void EPotential<dim>::solve ()
 template <int dim>
 void EPotential<dim>::output_results () const
 {
-  //  ComputeSolutionGradient<dim> electric_field;
   ComputeIntensity<dim> intensities;
   DataOut<dim> data_out;
   std::vector<DataComponentInterpretation::DataComponentInterpretation>
     data_component_interpretation(DataComponentInterpretation::component_is_scalar);
   
   std::vector<std::string> solution_name(numVariables, "potential");
-  // solution_name.push_back("electric_field");
   
   data_out.attach_dof_handler(dof_handler);
   data_out.add_data_vector(solution, 
@@ -481,8 +479,6 @@ void EPotential<dim>::output_results () const
 			   data_component_interpretation);
 
   data_out.add_data_vector (solution, intensities);
-
-  // data_out.add_data_vector(solution, electric_field);
 			  
   data_out.build_patches ();
 
@@ -524,11 +520,6 @@ int main ()
     EPotential<2> laplace_problem_2d;
     laplace_problem_2d.run ();
   }
-
-  // {
-  //   EPotential<3> laplace_problem_3d;
-  //   laplace_problem_3d.run ();
-  // }
 
   return 0;
 }
