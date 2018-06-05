@@ -1273,7 +1273,7 @@ namespace Step44
 	// these contributions are subtracted.
 	for (unsigned int i = 0; i < dofs_per_cell; ++i)
 	  {	
-	    data.cell_rhs(i) -= double_contract(PK, grad_Nx[i]) * JxW;
+	    data.cell_rhs(i) -= StandardTensors<dim>::double_contract_2_2(PK, grad_Nx[i]) * JxW;
 	  }
       }
 
