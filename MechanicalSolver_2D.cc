@@ -240,7 +240,6 @@ namespace Step44
     output_stress() const;
 
     Parameters::AllParameters        parameters;
-    Parameters::Fracture             parameters_Fracture;
 
     double                           vol_reference;
     double                           vol_current;

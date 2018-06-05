@@ -48,12 +48,6 @@ namespace Parameters
     {
       double nu;
       double E0;
-      double dEdc;
-      double dbetadc;
-      double rho_electrode;
-      double D;
-      double c0;
-      double cmax;
 
       static void
       declare_parameters(dealii::ParameterHandler &prm);
@@ -71,50 +65,7 @@ namespace Parameters
     {
       double nu_el;
       double E0_el;
-      double dEdc_el;
-      double dbetadc_el;
-      double rho_electrolyte;
-      double D_el;
-      double c0_el;
-      double cmax_el;
-
-      static void
-      declare_parameters(dealii::ParameterHandler &prm);
-
-      void
-      parse_parameters(dealii::ParameterHandler &prm);
-    };
-
-  // @sect4{ElectroChem}
-    struct ElectroChem
-    {
-      double RT;
-      double Farad; 
-      double mu0;
-      double Io; 
-      double alpha;
-      double current;
-
-      static void
-      declare_parameters(dealii::ParameterHandler &prm);
-      
-      void
-      parse_parameters(dealii::ParameterHandler &prm);
-    };
-
-// @sect4{Fracture}
-
-    // Fracture parameters: maximum opening displacement and maximum traction
-    // Material intrinsic properties are the fracture energy and the maximum opening displacement,
-    // which it needs to be scaled acoording to the mesh sixe.
-    // The max traction is computed from the fracture energy and the scaled opening displacement
-    struct Fracture
-    {
-      double coh_ELstiff;
-      double Elast_open_disp; 
-      double elasticToCrit_disp;
-      double fracture_En; 
-
+     
       static void
       declare_parameters(dealii::ParameterHandler &prm);
 
@@ -130,9 +81,6 @@ namespace Parameters
       std::string type_lin;
       double      tol_lin;
       double      max_iterations_lin;
-      double      Bbar;
-      // std::string preconditioner_type;
-      // double      preconditioner_relaxation;
 
       static void
       declare_parameters(dealii::ParameterHandler &prm);
@@ -152,11 +100,7 @@ namespace Parameters
       unsigned int max_iterations_NR;
       double       tol_f;
       double       tol_u;
-      double       tol_fc;
-      double       tol_c;
-      double       tol_fmu;
-      double       tol_mu;
-
+    
       static void
       declare_parameters(dealii::ParameterHandler &prm);
 
@@ -190,8 +134,6 @@ namespace Parameters
       public Geometry,
       public Material_electrode,
       public Material_electrolyte,
-      public ElectroChem,
-      public Fracture,
       public LinearSolver,
       public NonlinearSolver,
       public Time

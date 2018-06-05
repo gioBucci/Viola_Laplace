@@ -143,7 +143,7 @@ ComputeIntensity<dim>::compute_derived_quantities_scalar (const std::vector< dou
 {
   Assert(computed_quantities.size() == duh.size(),
          ExcDimensionMismatch (computed_quantities.size(), duh.size()));
-  // The computation itself is straightforward: We iterate over each entry in the output vector and compute |u| from the corresponding values of v and w:
+  // The computation itself is straightforward: We iterate over each entry in the output vector and compute the gradient:
   
   for (unsigned int i=0; i<computed_quantities.size(); i++)
     {
@@ -159,6 +159,7 @@ ComputeIntensity<dim>::compute_derived_quantities_scalar (const std::vector< dou
 
 
 // @sect4{EPotential::EPotential}
+
 // Here is the constructor of the <code>EPotential</code>
 // class. It specifies the desired polynomial degree of the finite elements
 // and associates the DoFHandler to the triangulation
@@ -175,16 +176,22 @@ EPotential<dim>::EPotential ()
   Ynormal_positive_plane(3),
   Ynormal_negative_plane(4),
   applied_current(1),
+  // The properties below are hard-coded. They will be passed as input in future versions
   current_density(1000.0),          // 1 A/m2 -> 0.1 mA/cm2
   // the current density here is to be inteded as the actual applied current density divided by the conductivity
-  bulk_conductivity(0.0001),        // 1 mS/cm -> 0.1 S/m
+  bulk_conductivity(0.1),        // 1 mS/cm -> 0.1 S/m
+  // The surface resistance is being varied in the simulations in the range 0.1-1000 Ohm cm2
   surface_resistance(0.001),    // 100 Ohm cm2  -> 0.01 Ohm m2
   convective_coeff(1.0 / (bulk_conductivity * surface_resistance)),
   mesh ("640round_long")
 
 {}
 
+// @sect4{EPotential::make_grid}
 
+// Here we read the mesh from a gmsh file generated with external software. 
+// We also loop over the cells and the boundary faces to assign boundary IDs. 
+// The boundary IDs will be used later to impose boundary conditions
 template <int dim>
 void EPotential<dim>::make_grid ()
 {
@@ -232,9 +239,8 @@ void EPotential<dim>::make_grid ()
     
   }
 
-  // This triangulation represents a solid electrolyte with non-uniform
-  // interfacial resistance (the one coded here is the extreme case of
-  // zero and infinite resistance).
+  // Alternatively the mesh can be generated with dealii
+  // when simple geometries are used
   else {
     const double edge = 0.50;
     const double tol = 1.e-6;
@@ -274,6 +280,13 @@ void EPotential<dim>::make_grid ()
 }
 
 // @sect4{EPotential::setup_system}
+
+// In the system set-up the solution and residual vectors are initialized 
+// and sized according to the total numeber of DOFs (problem's unknowns)
+// The stiffness matrix is also initialized based on the sparsity pattern.
+// The sparsity pattern takes into account the constrained nodes (this is why
+// we generate the constrains first) and its purpouse is to optimize storage 
+// and computation of the stiffness matrix
 template <int dim>
 void EPotential<dim>::setup_system ()
 {
@@ -332,10 +345,11 @@ void EPotential<dim>::setup_system ()
 
 }
 
-
 // @sect4{EPotential::assemble_system}
 
-
+// For each cell (or finite element) we assemble the local stiffness matrix and residual.
+// Then we copy them into the global tangent matrix and residual by calling the dealii
+// function constraints.distribute_local_to_global (see dealii documentation for details)
 template <int dim>
 void EPotential<dim>::assemble_system ()
 {
@@ -442,8 +456,9 @@ void EPotential<dim>::assemble_system ()
     }
 }
 
-
 // @sect4{EPotential::solve}
+
+// Solve the linear system by Conjugate Gradient method
 template <int dim>
 void EPotential<dim>::solve ()
 {
@@ -459,9 +474,10 @@ void EPotential<dim>::solve ()
   constraints.distribute(solution);
 }
 
-
 // @sect4{EPotential::output_results}
 
+// Here we write the solution (electric potential) and the solution gradient 
+// (electric field) in a format readable by Paraview
 template <int dim>
 void EPotential<dim>::output_results () const
 {
@@ -520,9 +536,13 @@ int main ()
     EPotential<2> laplace_problem_2d;
     laplace_problem_2d.run ();
   }
-
   return 0;
 }
+
+// Write the solution values (electric potential) at the nodes
+// along the interface with the Li-metal anode. The data is written
+// in a .csv file and it is later imported in a Mathematica notebook 
+// for plotting and port-processing
 
 template <int dim>
 void EPotential<dim>::PointValueEvaluation ()
@@ -579,6 +599,10 @@ void EPotential<dim>::PointValueEvaluation ()
 }
 
 
+// Write the solution normal gradient (electric field orthogonal 
+// to the interface) at the nodes along the interface with the Li-metal anode. 
+// The data is written in a .csv file and it is later imported in 
+// a Mathematica notebook for plotting and port-processing
 
 template <int dim>
 void EPotential<dim>:: PointXDerivativeEvaluation()
