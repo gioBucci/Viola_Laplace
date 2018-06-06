@@ -31,12 +31,15 @@
 #include <deal.II/lac/dynamic_sparsity_pattern.h>
 #include <deal.II/lac/solver_cg.h>
 #include <deal.II/lac/precondition.h>
+#include <deal.II/base/parameter_handler.h>
 
 #include <deal.II/numerics/data_out.h>
 #include <fstream>
 #include <iostream>
 
 #include <deal.II/base/logstream.h>
+
+#include "Parameters_ElecPot.h"
 
 using namespace dealii;
 
@@ -52,7 +55,7 @@ template <int dim>
 class EPotential
 {
 public:
-  EPotential ();
+  EPotential (const std::string &input_file);
   void run ();
 
 private:
@@ -84,9 +87,11 @@ private:
   unsigned int         Ynormal_positive_plane;
   unsigned int         Ynormal_negative_plane;
 
+  Parameters::AllParameters        parameters;
+
   bool                 applied_current;
-  double               current_density;
   double               bulk_conductivity;
+  double               current_density;
   double               surface_resistance;
   double               convective_coeff;
 
@@ -164,7 +169,7 @@ ComputeIntensity<dim>::compute_derived_quantities_scalar (const std::vector< dou
 // class. It specifies the desired polynomial degree of the finite elements
 // and associates the DoFHandler to the triangulation
 template <int dim>
-EPotential<dim>::EPotential ()
+EPotential<dim>::EPotential (const std::string &input_file)
   :
   numVariables(1),
   grid_choice(0),
@@ -175,15 +180,16 @@ EPotential<dim>::EPotential ()
   Xnormal_negative_plane_noCurr(2),
   Ynormal_positive_plane(3),
   Ynormal_negative_plane(4),
+  parameters(input_file),
   applied_current(1),
   // The properties below are hard-coded. They will be passed as input in future versions
-  current_density(1000.0),          // 1 A/m2 -> 0.1 mA/cm2
+  bulk_conductivity(parameters.kappa),        // 1 mS/cm -> 0.1 S/m
   // the current density here is to be inteded as the actual applied current density divided by the conductivity
-  bulk_conductivity(0.1),        // 1 mS/cm -> 0.1 S/m
+  current_density(parameters.current/bulk_conductivity),          // 1 A/m2 -> 0.1 mA/cm2
   // The surface resistance is being varied in the simulations in the range 0.1-1000 Ohm cm2
-  surface_resistance(0.001),    // 100 Ohm cm2  -> 0.01 Ohm m2
+  surface_resistance(parameters.rho),    // 100 Ohm cm2  -> 0.01 Ohm m2
   convective_coeff(1.0 / (bulk_conductivity * surface_resistance)),
-  mesh ("640round_long")
+  mesh(parameters.mesh_file)
 
 {}
 
@@ -531,11 +537,36 @@ void EPotential<dim>::run ()
 
 int main ()
 {
-  // deallog.depth_console (0);
-  {
-    EPotential<2> laplace_problem_2d;
-    laplace_problem_2d.run ();
-  }
+  try
+    {
+      deallog.depth_console(0);
+      EPotential<2> laplace_problem_2d("parameters_ElecPot.prm");
+      laplace_problem_2d.run ();
+    }
+  catch (std::exception &exc)
+    {
+      std::cerr << std::endl << std::endl
+		<< "----------------------------------------------------"
+		<< std::endl;
+      std::cerr << "Exception on processing: " << std::endl << exc.what()
+		<< std::endl << "Aborting!" << std::endl
+		<< "----------------------------------------------------"
+		<< std::endl;
+      
+      return 1;
+    }
+  catch (...)
+    {
+      std::cerr << std::endl << std::endl
+		<< "----------------------------------------------------"
+		<< std::endl;
+      std::cerr << "Unknown exception!" << std::endl << "Aborting!"
+		<< std::endl
+		<< "----------------------------------------------------"
+		<< std::endl;
+      return 1;
+    }
+  
   return 0;
 }
 
