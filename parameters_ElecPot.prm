@@ -1,0 +1,26 @@
+# Listing of Parameters
+# ---------------------
+subsection Electrochemical properties
+  # Applied current density [A/m2]
+  set Applied current density  = 10.0
+
+  # Solid Electrolyte conductivity [S/m]
+  set Electrolyte conductivity = 0.1
+
+  # Resistance at the anode interface [Ohm m2]
+  set Interfacial resistance   = 0.01
+end
+
+
+subsection Geometry
+  # Global refinement level
+  set Global refinement = 1
+
+  # Global grid scaling factor
+  set Grid scale        = 1.0e-5
+
+  # Mesh file name (without extension)
+  set Mesh file name    = 640round_short
+end
+
+
