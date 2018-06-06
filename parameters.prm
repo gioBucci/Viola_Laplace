@@ -1,0 +1,74 @@
+# Listing of Parameters
+# ---------------------
+subsection Electrode material properties
+  # Poisson's ratio
+  set Poisson's ratio = 0.22
+
+  # Young's modulus, initial value
+  set Young's modulus = 5.0e9
+end
+
+
+subsection Electrolyte material properties
+  # Electrolyte Poisson's ratio
+  set Poisson's ratio = 0.22
+
+  # Electrolyte Young's modulus, initial value
+  set Young's modulus = 100.0e9
+end
+
+
+subsection Finite element system
+  # Displacement system polynomial order
+  set Polynomial degree = 1
+
+  # Gauss quadrature order
+  set Quadrature order  = 2
+end
+
+
+subsection Geometry
+  # Global refinement level
+  set Global refinement      = 1
+
+  # Flag for generating or reading the mesh
+  set Grid generation choice = 1
+
+  # Global grid scaling factor
+  set Grid scale             = 1.0e-5
+end
+
+
+subsection Linear solver
+  # Linear solver iterations (multiples of the system matrix size)
+  set Max iteration multiplier = 1
+
+  # Linear solver residual (scaled by residual norm)
+  set Residual                 = 1e-6
+
+  # Type of solver used to solve the linear system
+  set Solver type              = UMFPACK
+end
+
+
+subsection Nonlinear solver
+  # Number of Newton-Raphson iterations allowed
+  set Max iterations Newton-Raphson = 15
+
+  # Displacement error tolerance
+  set Tolerance displacement        = 1.0e-6
+
+  # Force residual tolerance
+  set Tolerance force               = 1.0e-6
+end
+
+
+subsection Time
+  # End time
+  set End time       = 5000
+
+  # Time step size
+  set Time step size = 1.0
+end
+
+
